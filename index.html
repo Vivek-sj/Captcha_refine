@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login Demo with CAPTCHA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-top: 10px;
+      background: #fafafa;
+    }
+    .btn, .refresh {
+      margin-top: 15px;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn {
+      background: #4CAF50;
+      color: white;
+      width: 100%;
+    }
+    .refresh {
+      background: #2196F3;
+      color: white;
+      margin-left: 10px;
+    }
+    .status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .status.ok { color: green; }
+    .status.err { color: red; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Login with CAPTCHA</h1>
+    <form id="loginForm">
+      <label>Username</label>
+      <input id="username" type="text" placeholder="Enter username" required>
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••" required>
+
+      <label>Enter CAPTCHA (Case Sensitive)</label>
+      <canvas id="captchaCanvas" width="200" height="60"></canvas>
+      <div>
+        <input id="captchaInput" type="text" placeholder="Enter CAPTCHA" required>
+        <button type="button" class="refresh" id="regenBtn">↻ Refresh</button>
+      </div>
+
+      <button class="btn" type="submit">Register</button>
+      <div id="status" class="status"></div>
+    </form>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('captchaCanvas');
+    const ctx = canvas.getContext('2d');
+    const input = document.getElementById('captchaInput');
+    const statusEl = document.getElementById('status');
+    const regenBtn = document.getElementById('regenBtn');
+
+    const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let currentCode = '';
+
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min) + min); }
+
+    function generateCode(len = 6) {
+      let s = '';
+      for (let i = 0; i < len; i++) s += ALPHABET[randInt(0, ALPHABET.length)];
+      return s;
+    }
+
+    function drawCaptcha(text) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f9f9f9';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = '30px Arial';
+      ctx.fillStyle = '#333';
+      ctx.fillText(text, 30, 40);
+    }
+
+    function regenerate() {
+      currentCode = generateCode(5);
+      drawCaptcha(currentCode);
+      input.value = '';
+      statusEl.textContent = '';
+      statusEl.className = 'status';
+    }
+
+    regenBtn.addEventListener('click', regenerate);
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const cap = input.value.trim();
+
+      if (cap === currentCode) { // Case-sensitive check
+        statusEl.textContent = '✅ You have successfully registered!';
+        statusEl.className = 'status ok';
+      } else {
+        statusEl.textContent = '❌ Please enter the CAPTCHA correctly.';
+        statusEl.className = 'status err';
+        regenerate();
+      }
+    });
+
+    regenerate();
+  </script>
+</body>
+</html>
